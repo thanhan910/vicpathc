@@ -1,10 +1,14 @@
 version: '3'
 
 services:
-  dev-container:
-    build: .
+  vicpathc-dev:
+    container_name: vicpathc-dev-container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vicpathc-dev-image
     volumes:
-      - ..:/workspace   # Mount the current directory to /workspace in the container
+      - .:/workspace   # Mount the current directory to /workspace in the container
       - /workspace/.vscode-server:/root/.vscode-server  # Persist VS Code server data
     environment:
       - POSTGRES_HOST=host.docker.internal
