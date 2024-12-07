@@ -1,4 +1,4 @@
-version: '3'
+# version: '3'
 
 services:
   vicpathc-dev:
@@ -22,3 +22,9 @@ services:
     command: sleep infinity
     # stdin_open: true  # Equivalent to `-i` to keep STDIN open
     # tty: true         # Equivalent to `-t` to allocate a pseudo-TTY
+
+# Build and run the container using the following command:
+# docker-compose up --build
+
+# Open a terminal inside the container using the following command:
+# docker exec -it vicpathc-dev-container /bin/bash
