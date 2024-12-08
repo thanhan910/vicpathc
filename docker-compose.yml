@@ -9,6 +9,7 @@ services:
     image: vicpathc-dev-image
     volumes:
       - .:/workspace   # Mount the current directory to /workspace in the container
+      - ./local:/data  # Mount the /local directory to /data in the container
       - /workspace/.vscode-server:/root/.vscode-server  # Persist VS Code server data
     environment:
       - POSTGRES_HOST=host.docker.internal

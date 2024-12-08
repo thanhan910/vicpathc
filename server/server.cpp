@@ -39,7 +39,13 @@ using tcp = net::ip::tcp;
 Server::Server(const std::string &address, unsigned short port)
     : endpoint_(net::ip::make_address(address), port), acceptor_(ioc_, endpoint_), searchgraph_()
 {
+    std::chrono::steady_clock::time_point begin, end;
+
+    begin = std::chrono::steady_clock::now();
     searchgraph_.build();
+    end = std::chrono::steady_clock::now();
+    std::cout << "Total time building search graph = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+    
 }
 
 // Run the server

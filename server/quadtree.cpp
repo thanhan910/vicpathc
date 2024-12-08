@@ -130,7 +130,8 @@ void QuadTree::gen_quadtree()
     // Read segments from a csv file
     begin = std::chrono::steady_clock::now();
 
-    std::ifstream file("../local/segments.csv");
+    // std::ifstream file("../local/segments.csv");
+    std::ifstream file("/data/segments.csv");
 
     std::string line;
 
@@ -227,7 +228,8 @@ void QuadTree::test_quadtree()
 
     begin = std::chrono::steady_clock::now();
 
-    std::ofstream file("../local/stops_nearest_segment.csv");
+    // std::ofstream file("../local/stops_nearest_segment.csv");
+    std::ofstream file("/data/stops_nearest_segment.csv");
 
     file << "stop_id,stop_lat,stop_lon,roadufi,segment_x1,segment_y1,segment_x2,segment_y2,distance_degree,distance_meter" << std::endl;
 
