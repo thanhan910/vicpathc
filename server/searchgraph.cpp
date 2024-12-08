@@ -269,12 +269,12 @@ std::pair<Path, RoadLength> SearchGraph::search_path(double lon1, double lat1, d
     NearestRoadInfo start_road_info = find_nearest_road(lon1, lat1).at(0);
     auto [start_road_ufi, start_road_direction, start_road_px, start_road_py, start_from_ufi, start_to_ufi] = start_road_info;
 
-    std::cout << start_road_ufi << " " << start_from_ufi << " " << start_to_ufi << std::endl;
+    // std::cout << start_road_ufi << " " << start_from_ufi << " " << start_to_ufi << std::endl;
 
     NearestRoadInfo goal_road_info = find_nearest_road(lon2, lat2).at(0);
     auto [goal_road_ufi, goal_road_direction, goal_road_px, goal_road_py, goal_from_ufi, goal_to_ufi] = goal_road_info;
 
-    std::cout << goal_road_ufi << " " << goal_from_ufi << " " << goal_to_ufi << std::endl;
+    // std::cout << goal_road_ufi << " " << goal_from_ufi << " " << goal_to_ufi << std::endl;
 
     if (start_road_ufi == goal_road_ufi)
     {
@@ -285,6 +285,103 @@ std::pair<Path, RoadLength> SearchGraph::search_path(double lon1, double lat1, d
 
     return astar(START_POINT_UFI, GOAL_POINT_UFI, special_neighbors, skip_neighbors); // Assuming start is 0 and goal is 1
 }
+
+
+std::vector<std::vector<std::pair<double, double>>> parseWKTtoMultiLineString(const std::string &wkt)
+{
+    std::vector<std::vector<std::pair<double, double>>> multiLineString;
+
+    // Remove the "MULTILINESTRING(" and ")" from the WKT string
+    std::string stripped_wkt = wkt.substr(16, wkt.size() - 17);
+    std::istringstream lines_stream(stripped_wkt);
+    std::string line;
+
+    while (std::getline(lines_stream, line, ')'))
+    {
+        // Skip any commas at the beginning of each line string segment
+        if (!line.empty() && line[0] == ',')
+            line = line.substr(2);
+
+        std::vector<std::pair<double, double>> lineString;
+        std::istringstream points_stream(line.substr(1)); // Remove the leading '('
+        std::vector<std::string> lineStr;
+        // lineStr.push_back(line);
+        // Split the line by comma
+        line = line.substr(1);
+        for (int i = 0; i < line.size(); i++)
+        {
+            if (line[i] == ',')
+            {
+                lineStr.push_back(line.substr(0, i));
+                line = line.substr(i + 1);
+                i = 0;
+            }
+            else if (line[i] == ' ')
+            {
+                lineStr.push_back(line.substr(0, i));
+                line = line.substr(i + 1);
+                i = 0;
+            }
+        }
+        lineStr.push_back(line);
+
+        std::string point;
+        while (std::getline(points_stream, point, ','))
+        {
+            // Split the point into two strings by space
+            std::istringstream point_stream(point);
+#ifdef USE_STRING
+            std::string x_str, y_str;
+            std::getline(point_stream, x_str, ' ');
+            std::getline(point_stream, y_str, ' ');
+            lineString.emplace_back(x_str, y_str);
+#else
+            double x, y;
+            point_stream >> x >> y;
+            lineString.emplace_back(x, y);
+#endif
+        }
+
+        multiLineString.push_back(lineString);
+    }
+    return multiLineString;
+}
+
+
+
+std::vector<PathRoadInfo> SearchGraph::get_path_info(const Path &path)
+{
+    std::string sql = "SELECT ufi, ezi_road_name_label, direction_code, road_length_meters, ST_AsText(geom) FROM vmtrans.tr_road_all WHERE ufi IN (";
+    for (int i = 0; i < path.size(); i++)
+    {
+        sql += std::to_string(path[i]) + ",";
+    }
+    sql.pop_back();
+    sql += ");";
+
+    pqxx::work txn(conn);
+
+    pqxx::result result = txn.exec(sql);
+
+    std::vector<PathRoadInfo> roads_info;
+
+    for (auto row : result)
+    {
+        RoadUFI ufi = row[0].as<int>();
+        std::string ezi_road_name_label = row[1].as<std::string>();
+        RoadDirection direction_code = row[2].as<RoadDirection>();
+        double road_length_meters = row[3].as<double>();
+        std::string multiline_wkt = row[4].as<std::string>();
+        std::vector<std::vector<std::pair<double, double>>> multiLineString = parseWKTtoMultiLineString(multiline_wkt);
+        assert(multiLineString.size() == 1);
+        std::vector<std::pair<double, double>> geom = multiLineString[0];
+        // std::cout << ufi << " " << ezi_road_name_label << " " << direction_code << " " << road_length_meters << " " << geom << std::endl;
+        roads_info.emplace_back(ufi, ezi_road_name_label, direction_code, road_length_meters, geom);
+    }
+
+    return roads_info;
+}
+
 
 void SearchGraph::build()
 {

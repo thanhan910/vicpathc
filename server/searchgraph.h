@@ -33,6 +33,8 @@ using NearestRoadInfo = std::tuple<RoadUFI, RoadDirection, double, double, Point
 using Path = std::vector<RoadUFI>;
 using FrontierItem = std::tuple<RoadLength, RoadLength, PointUFI, Path>;
 
+using PathRoadInfo = std::tuple<RoadUFI, std::string, RoadDirection, double, std::vector<std::pair<double, double>>>;
+
 class SearchGraph {
 
 private:
@@ -69,6 +71,8 @@ public:
     std::vector<NearestRoadInfo> find_nearest_road(double lon, double lat);
 
     std::pair<Path, RoadLength> search_path(double lon1, double lat1, double lon2, double lat2);
+
+    std::vector<PathRoadInfo> get_path_info(const Path &path);
 
     void build();
 };

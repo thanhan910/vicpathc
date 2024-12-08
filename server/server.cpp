@@ -170,14 +170,41 @@ void Server::handle_request(const http::request<http::string_body> &req, http::r
         double x1 = params["x1"], y1 = params["y1"], x2 = params["x2"], y2 = params["y2"];
 
         auto [path, cost] = searchgraph_.search_path(x1, y1, x2, y2);
+        auto path_info = searchgraph_.get_path_info(path);
         res.result(http::status::ok);
         res.set(http::field::content_type, "application/json");
         std::string path_str = "[";
-        for (int i = 0; i < path.size(); i++)
+        for (int i = 0; i < path_info.size(); i++)
         {
-            if (i > 0)
-                path_str += ", ";
-            path_str += std::to_string(path[i]);
+            if (i > 0) path_str += ", ";
+            auto road_info = path_info[i];
+            int roadufi = std::get<0>(road_info);
+            // RoadUFI, std::string, RoadDirection, double, std::string
+            std::string ezi_road_name_label = std::get<1>(road_info);
+            RoadDirection direction_code = std::get<2>(road_info);
+            double road_length_meters = std::get<3>(road_info);
+            std::vector<std::pair<double, double>> geom = std::get<4>(road_info);
+            path_str += "{";
+            // path_str +=  "\"roadufi\": " + std::to_string(roadufi) + ","; + "\"roadname\": " + ezi_road_name_label + "," + "\"direction\": " + direction_code + "," + "\"direction\": " + road_length_meters + "," + "\"geom\": " + geom + "}";
+            path_str +=  "\"ufi\": " + std::to_string(roadufi) + ",";
+            path_str += "\"ezi_road_name_label\": \"" + ezi_road_name_label + "\",";
+            path_str += "\"direction_code\": \"" + direction_code + "\",";
+            path_str += "\"road_length_meters\": " + std::to_string(road_length_meters) + ",";
+            path_str += "\"geom\": [";
+            for (int j = 0; j < geom.size(); j++)
+            {
+                if (j > 0) path_str += ", ";
+                // Get double with 17 precision
+                std::ostringstream oss;
+                oss << std::setprecision(17) << geom[j].first; // or std::fixed
+                std::string x_str = oss.str();
+                std::ostringstream oss2;
+                oss2 << std::setprecision(17) << geom[j].second; // or std::fixed
+                std::string y_str = oss2.str();
+                path_str += "[" + x_str + ", " + y_str + "]";
+            }
+            path_str += "]";
+            path_str += "}";
         }
         path_str += "]";
         res.body() = "{\"path\": " + path_str + ", \"cost\": " + std::to_string(cost) + "}";
