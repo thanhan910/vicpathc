@@ -1,0 +1,28 @@
+# Compiler and flags
+CXX = g++
+CXXFLAGS = -std=c++17 -I/vcpkg/installed/x64-linux/include
+LDFLAGS = -L/vcpkg/installed/x64-linux/lib $(shell pkg-config --cflags --libs libpqxx libpq libmongocxx-static)
+
+# Source files and output
+SRCS = main.cpp point.cpp segment.cpp boundary.cpp quadnode.cpp quadtree.cpp searchgraph.cpp server.cpp
+OBJS = $(SRCS:.cpp=.o)
+TARGET = local-server.exe
+
+# Default target
+all: $(TARGET)
+
+# Linking
+$(TARGET): $(OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+# Compilation
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Clean up
+clean:
+	rm -f $(OBJS) $(TARGET)
+
+# Run the program
+run: all
+	./$(TARGET)
