@@ -149,7 +149,16 @@ void Server::handle_request(const http::request<http::string_body> &req, http::r
         auto [nearestSegment, closestPoint, minDistance, quads] = searchgraph_.quadtree.find_nearest_segment(p);
         res.result(http::status::ok);
         res.set(http::field::content_type, "application/json");
-        res.body() = "{\"roadufi\": " + std::to_string(nearestSegment.roadufi) + ", \"distance\": " + std::to_string(minDistance) + ", \"x1\": " + std::to_string(nearestSegment.p1.x) + ", \"y1\": " + std::to_string(nearestSegment.p1.y) + ", \"x2\": " + std::to_string(nearestSegment.p2.x) + ", \"y2\": " + std::to_string(nearestSegment.p2.y) + ", \"px\": " + std::to_string(closestPoint.x) + ", \"py\": " + std::to_string(closestPoint.y) + "}";
+        res.body() = "{\"roadufi\": " + std::to_string(nearestSegment.roadufi) 
+        + ", \"pos\": " + std::to_string(nearestSegment.pos)
+        + ", \"distance\": " + std::to_string(minDistance) 
+        + ", \"x1\": " + std::to_string(nearestSegment.p1.x) 
+        + ", \"y1\": " + std::to_string(nearestSegment.p1.y) 
+        + ", \"x2\": " + std::to_string(nearestSegment.p2.x) 
+        + ", \"y2\": " + std::to_string(nearestSegment.p2.y) 
+        + ", \"px\": " + std::to_string(closestPoint.x) 
+        + ", \"py\": " + std::to_string(closestPoint.y) 
+        + "}";
     }
     else if (req.method() == http::verb::get && req.target().starts_with("/searchpath"))
     {
