@@ -46,13 +46,14 @@ std::vector<Segment> QuadTree::get_segments()
     for (auto row : result)
     {
         int roadufi = row[0].as<int>();
-        double x1 = row[1].as<double>();
-        double y1 = row[2].as<double>();
-        double x2 = row[3].as<double>();
-        double y2 = row[4].as<double>();
+        int pos = row[1].as<int>();
+        double x1 = row[2].as<double>();
+        double y1 = row[3].as<double>();
+        double x2 = row[4].as<double>();
+        double y2 = row[5].as<double>();
         Point p1 = {x1, y1};
         Point p2 = {x2, y2};
-        Segment segment = {p1, p2, roadufi};
+        Segment segment = {p1, p2, roadufi, pos};
         segments.push_back(segment);
     }
 
@@ -137,18 +138,18 @@ void QuadTree::gen_quadtree()
 
     // Skip the first line
     std::getline(file, line);
-    int roadufi;
+    int roadufi, pos;
     double x1, y1, x2, y2;
     char delimiter;
     int i = 0;
-    while (file >> roadufi >> delimiter >> x1 >> delimiter >> y1 >> delimiter >> x2 >> delimiter >> y2)
+    while (file >> roadufi >> delimiter >> pos >> delimiter >> x1 >> delimiter >> y1 >> delimiter >> x2 >> delimiter >> y2)
     {
         i++;
         if (i % 108000 == 0)
         {
             std::cout << "Batch: " << i / 108000 << std::endl;
         }
-        Segment segment = {{x1, y1}, {x2, y2}, roadufi};
+        Segment segment = {{x1, y1}, {x2, y2}, roadufi, pos};
         root->insert(segment);
     }
 
@@ -160,7 +161,7 @@ void QuadTree::gen_quadtree()
 std::tuple<Segment, Point, double, std::vector<QuadNode *>> QuadTree::find_nearest_segment(const Point &p)
 {
     double min_distance = std::numeric_limits<double>::max();
-    Segment nearest_segment = {{0, 0}, {0, 0}, -1};
+    Segment nearest_segment = {{0, 0}, {0, 0}, -1, -1};
     Point min_point = {0, 0};
 
     std::priority_queue<FrontierElement, std::vector<FrontierElement>, CompareFrontierElement> frontier;

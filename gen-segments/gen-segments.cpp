@@ -127,9 +127,9 @@ int main()
     // Write segments to a csv file
     begin = std::chrono::steady_clock::now();
 
-    std::ofstream segments_file("../local/segments.csv");
+    std::ofstream segments_file("/data/segments.csv");
 
-    segments_file << "roadufi,x1,y1,x2,y2\n";
+    segments_file << "roadufi,pos,x1,y1,x2,y2" << std::endl;
 
     pqxx::work txn(conn);
 
@@ -187,7 +187,7 @@ int main()
             Component y1 = road[i].y;
             Component x2 = road[i + 1].x;
             Component y2 = road[i + 1].y;
-            segments_file << roadufi << "," << x1 << "," << y1 << "," << x2 << "," << y2 << "\n";
+            segments_file << roadufi << ',' << i << ',' << x1 << ',' << y1 << ',' << x2 << ',' << y2 << std::endl;
             // segments.push_back({road[i], road[i+1]});
         }
         count++;
