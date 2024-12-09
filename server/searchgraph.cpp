@@ -108,9 +108,8 @@ double SearchGraph::heuristic(PointUFI current, PointUFI goal)
 
 std::pair<NeighborMap, PointMap> SearchGraph::gen_extra_info(NearestRoadInfo start_road_info, NearestRoadInfo goal_road_info)
 {
-
-    auto [start_road_ufi, start_road_direction, start_road_px, start_road_py, start_from_ufi, start_to_ufi] = start_road_info;
-    auto [goal_road_ufi, goal_road_direction, goal_road_px, goal_road_py, goal_from_ufi, goal_to_ufi] = goal_road_info;
+    auto [start_road_ufi, start_road_direction, start_from_ufi, start_to_ufi, start_road_px, start_road_py, start_nearestSegment] = start_road_info;
+    auto [goal_road_ufi, goal_road_direction, goal_from_ufi, goal_to_ufi, goal_road_px, goal_road_py, goal_nearestSegment] = goal_road_info;
 
     NeighborMap special_neighbors;
 
@@ -182,7 +181,7 @@ std::pair<Path, RoadLength> SearchGraph::astar(PointUFI start, PointUFI goal, Ne
             return {current_path, cost};
         }
 
-        if (current == 1)
+        if (current == GOAL_POINT_UFI)
         {
             return {path, cost};
         }
@@ -233,7 +232,7 @@ std::pair<Path, RoadLength> SearchGraph::astar(PointUFI start, PointUFI goal, Ne
 
 SearchGraph::SearchGraph() {}
 
-std::vector<NearestRoadInfo> SearchGraph::find_nearest_road(double lon, double lat)
+NearestRoadInfo SearchGraph::find_nearest_road(double lon, double lat)
 {
 
     Point p = {lon, lat};
@@ -247,32 +246,27 @@ std::vector<NearestRoadInfo> SearchGraph::find_nearest_road(double lon, double l
     std::string query = "SELECT ufi, direction_code, from_ufi, to_ufi FROM vmtrans.tr_road_all WHERE ufi = " + std::to_string(roadufi) + " LIMIT 1;";
 
     pqxx::result result = txn.exec(query);
-    std::vector<NearestRoadInfo> roads;
+    auto row = result[0];
 
-    for (auto row : result)
-    {
-        roads.emplace_back(
-            row[0].as<RoadUFI>(),
-            row[1].as<RoadDirection>(),
-            closestPoint.x,
-            closestPoint.y,
-            row[2].as<PointUFI>(),
-            row[3].as<PointUFI>());
-    }
+    NearestRoadInfo road;
+    // RoadUFI roadufi = row[0].as<RoadUFI>();
+    RoadDirection direction = row[1].as<RoadDirection>();
+    PointUFI from_ufi = row[2].as<PointUFI>();
+    PointUFI to_ufi = row[3].as<PointUFI>();
 
-    return roads;
+    return {roadufi, direction, from_ufi, to_ufi, closestPoint.x, closestPoint.y, nearestSegment};
 }
 
 std::pair<Path, RoadLength> SearchGraph::search_path(double lon1, double lat1, double lon2, double lat2)
 {
 
-    NearestRoadInfo start_road_info = find_nearest_road(lon1, lat1).at(0);
-    auto [start_road_ufi, start_road_direction, start_road_px, start_road_py, start_from_ufi, start_to_ufi] = start_road_info;
+    NearestRoadInfo start_road_info = find_nearest_road(lon1, lat1);
+    auto [start_road_ufi, start_road_direction, start_from_ufi, start_to_ufi, start_road_px, start_road_py, start_nearestSegment] = start_road_info;
 
     // std::cout << start_road_ufi << " " << start_from_ufi << " " << start_to_ufi << std::endl;
 
-    NearestRoadInfo goal_road_info = find_nearest_road(lon2, lat2).at(0);
-    auto [goal_road_ufi, goal_road_direction, goal_road_px, goal_road_py, goal_from_ufi, goal_to_ufi] = goal_road_info;
+    NearestRoadInfo goal_road_info = find_nearest_road(lon2, lat2);
+    auto [goal_road_ufi, goal_road_direction, goal_from_ufi, goal_to_ufi, goal_road_px, goal_road_py, goal_nearestSegment] = goal_road_info;
 
     // std::cout << goal_road_ufi << " " << goal_from_ufi << " " << goal_to_ufi << std::endl;
 
@@ -432,13 +426,9 @@ void test_searchgraph()
     for (int i = 0; i < 10; i++)
     {
         double lon = sample_lons[i], lat = sample_lats[i];
-        auto roads = searchgraph.find_nearest_road(lon, lat);
+        auto [road_ufi, direction, from_ufi, to_ufi, px, py, nearestSeg] = searchgraph.find_nearest_road(lon, lat);
         std::cout << "Point " << i << " (" << lon << ", " << lat << "): ";
-        for (const auto &[road_ufi, direction, px, py, from_ufi, to_ufi] : roads)
-        {
-            std::cout << road_ufi << " ";
-        }
-        std::cout << std::endl;
+        std::cout << road_ufi << " " << std::endl;
     }
     // g++ main.cpp -o test $(pkg-config --cflags --libs libpqxx libpq libmongocxx-static) -I/vcpkg/installed/x64-linux/include -L/vcpkg/installed/x64-linux/lib
 };

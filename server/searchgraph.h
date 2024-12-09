@@ -8,6 +8,7 @@
 
 #include "quadtree.h"
 #include "point.h"
+#include "segment.h"
 
 
 namespace bg = boost::geometry;
@@ -28,7 +29,7 @@ using NeighborMap = std::map<PointUFI, NeighborList>;
 
 using PointMap = std::map<PointUFI, PointUFI>;
 
-using NearestRoadInfo = std::tuple<RoadUFI, RoadDirection, double, double, PointUFI, PointUFI>;
+using NearestRoadInfo = std::tuple<RoadUFI, RoadDirection, PointUFI, PointUFI, double, double, Segment>;
 
 using Path = std::vector<RoadUFI>;
 using FrontierItem = std::tuple<RoadLength, RoadLength, PointUFI, Path>;
@@ -68,7 +69,7 @@ public:
 
     SearchGraph();
 
-    std::vector<NearestRoadInfo> find_nearest_road(double lon, double lat);
+    NearestRoadInfo find_nearest_road(double lon, double lat);
 
     std::pair<Path, RoadLength> search_path(double lon1, double lat1, double lon2, double lat2);
 

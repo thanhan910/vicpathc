@@ -8,6 +8,8 @@ struct Segment
 
     int roadufi;
 
+    int pos;
+
     Point midpoint() const;
 
     Point projectionPoint(const Point &p) const;
