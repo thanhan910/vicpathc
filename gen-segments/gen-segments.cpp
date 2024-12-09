@@ -129,7 +129,7 @@ int main()
 
     std::ofstream segments_file("/data/segments.csv");
 
-    segments_file << "roadufi,pos,x1,y1,x2,y2" << std::endl;
+    segments_file << "roadufi,pos,x1,y1,x2,y2\n";
 
     pqxx::work txn(conn);
 
@@ -140,6 +140,7 @@ int main()
     pqxx::result result = txn.exec(query);
     end = std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+    // Time difference = 27500[ms]
 
     begin = std::chrono::steady_clock::now();
     std::cout << "Parse SQL result:" << std::endl;
@@ -187,14 +188,14 @@ int main()
             Component y1 = road[i].y;
             Component x2 = road[i + 1].x;
             Component y2 = road[i + 1].y;
-            segments_file << roadufi << ',' << i << ',' << x1 << ',' << y1 << ',' << x2 << ',' << y2 << std::endl;
+            segments_file << roadufi << ',' << i << ',' << x1 << ',' << y1 << ',' << x2 << ',' << y2 << '\n';
             // segments.push_back({road[i], road[i+1]});
         }
         count++;
         if (count % bar_size == 0)
         {
             bar_count++;
-            std::cout << "Bar " << bar_count << std::endl;
+            std::cout << "Bar " << bar_count << '\n';
         }
     }
 
@@ -207,8 +208,15 @@ int main()
     end = std::chrono::steady_clock::now();
     std::cout << "Write segments to a csv file: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
+    // Time difference = 58081[ms]
+    // Write segments to a csv file: 58082[ms]
+    // Writing '\n' is much faster than writing std::endl because it does not flush the buffer.
+    // A buffer is a temporary storage area for data that has not yet been written to a file. This temporary storage area is used to improve performance by reducing the number of disk writes. It exists in memory and is only written to the disk when the buffer is full or the program exits.
+    // std::endl flushes the buffer, which means that the data is written to the file immediately.
+    // On the other hand, '\n' does not flush the buffer, so the data is not written to the file until the buffer is full or the program exits.
+
     // Save the min max boundary to a file
-    std::ofstream boundary_file("../local/boundary.csv");
+    std::ofstream boundary_file("/data/boundary.csv");
     boundary_file << "x_min,y_min,x_max,y_max\n";
     boundary_file << x_min << "," << y_min << "," << x_max << "," << y_max << "\n";
     boundary_file.close();
