@@ -25,11 +25,14 @@ pkg_check_modules(LIBPQXX REQUIRED libpqxx)
 pkg_check_modules(LIBPQ REQUIRED libpq)
 pkg_check_modules(LIBMONGOCXX REQUIRED libmongocxx-static)
 
-# Collect all source files
-file(GLOB SOURCES 
-    "*.cpp"
-    "geoobjects/*.cpp"
-)
+# Collect all source files recursively
+file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/*.cpp")
+
+# # Filter out files in the CMakeFiles directory
+# list(FILTER SOURCES EXCLUDE REGEX ".*CMakeFiles/.*")
+
+# Filter out files in the build directory
+list(FILTER SOURCES EXCLUDE REGEX "${CMAKE_BINARY_DIR}/.*")
 
 # Define the executable
 add_executable(local-server ${SOURCES})
@@ -47,7 +50,7 @@ target_include_directories(local-server PRIVATE
     ${LIBPQXX_INCLUDE_DIRS}
     ${LIBPQ_INCLUDE_DIRS}
     ${LIBMONGOCXX_INCLUDE_DIRS}
-    ${CMAKE_SOURCE_DIR}/geoobjects  # Include geoobjects folder
+    ${CMAKE_SOURCE_DIR}  # Include all project directories
 )
 
 # Add link directories explicitly if necessary
