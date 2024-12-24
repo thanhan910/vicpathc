@@ -3,87 +3,89 @@
 #include <vector>
 #include <string>
 
-struct GeoPoint
+struct GPoint
 {
     double x, y;
 
-    double distanceToGeoPoint(const GeoPoint &other) const;
+    double distanceToPoint(const GPoint &other) const;
+
+    double distanceToPointGeography(const GPoint &other) const;
 };
 
 
-struct GeoSegment
+struct GSegment
 {
-    GeoPoint p1, p2;
+    GPoint p1, p2;
 
-    GeoSegment(const GeoPoint &p1, const GeoPoint &p2) : p1{p1}, p2{p2} {};
+    GSegment(const GPoint &p1, const GPoint &p2) : p1{p1}, p2{p2} {};
 
-    GeoPoint midpoint() const;
+    GPoint midpoint() const;
 
-    GeoPoint projectionPoint(const GeoPoint &p) const;
+    GPoint projectionPoint(const GPoint &p) const;
 
-    GeoPoint nearestPoint(const GeoPoint &p) const;
+    GPoint nearestPoint(const GPoint &p) const;
 
-    double perpendicularDistanceFromPoint(const GeoPoint &p) const;
+    double perpendicularDistanceFromPoint(const GPoint &p) const;
 
-    double minDistanceFromPoint(const GeoPoint &p) const;
+    double minDistanceFromPoint(const GPoint &p) const;
 };
 
 
 
-struct GeoAlignedSegment
+struct GAlignedSegment
 {
     double x1, y1, x2, y2;
     bool is_vertical;
 
-    GeoAlignedSegment(const GeoPoint &p1, const GeoPoint &p2);
+    GAlignedSegment(const GPoint &p1, const GPoint &p2);
 
-    bool containsPoint(const GeoPoint &p) const;
+    bool containsPoint(const GPoint &p) const;
 
-    double distanceToPoint(const GeoPoint &p) const;
+    double distanceToPoint(const GPoint &p) const;
 
-    bool intersectsSegment(const GeoSegment &other) const;
+    bool intersectsSegment(const GSegment &other) const;
 };
 
 
-struct GeoBoundary
+struct GBoundary
 {
     double x_min, y_min, x_max, y_max;
 
-    bool containsPoint(const GeoPoint &p) const;
+    bool containsPoint(const GPoint &p) const;
 
-    bool intersectsBoundary(const GeoBoundary &other) const;
+    bool intersectsBoundary(const GBoundary &other) const;
 
-    bool intersectsSegment(const GeoSegment &segment) const;
+    bool intersectsSegment(const GSegment &segment) const;
 
-    double pointMinDistance(const GeoPoint &p) const;
+    double pointMinDistance(const GPoint &p) const;
 };
 
 
-struct GeoLine
+struct GLine
 {
-    std::vector<GeoPoint> points;
+    std::vector<GPoint> points;
 
-    GeoLine() {};
+    GLine() {};
 
-    GeoLine(const std::vector<GeoPoint> &points) : points{points} {};
+    GLine(const std::vector<GPoint> &points) : points{points} {};
 
-    GeoLine(const std::string &wkt);
+    GLine(const std::string &wkt);
 };
 
 
-struct RoadSegment : GeoSegment
+struct RoadSegment : GSegment
 {
     int roadufi;
     int pos;
 
-    RoadSegment (const GeoPoint &p1, const GeoPoint &p2, int roadufi, int pos) : GeoSegment(p1, p2), roadufi{roadufi}, pos{pos} {};
+    RoadSegment (const GPoint &p1, const GPoint &p2, int roadufi, int pos) : GSegment(p1, p2), roadufi{roadufi}, pos{pos} {};
 };
 
-struct RoadLine : GeoLine
+struct RoadLine : GLine
 {
     int roadufi;
 
     RoadLine(int roadufi) : roadufi{roadufi} {};
 
-    RoadLine(const std::vector<GeoPoint> &points, int roadufi) : GeoLine(points), roadufi{roadufi} {};
+    RoadLine(const std::vector<GPoint> &points, int roadufi) : GLine(points), roadufi{roadufi} {};
 };
