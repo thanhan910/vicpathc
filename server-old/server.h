@@ -41,7 +41,7 @@
 #include <thread>
 
 #include "db.h"
-#include "point.h"
+#include "geoobjects/point.h"
 #include "searchgraph.h"
 
 
