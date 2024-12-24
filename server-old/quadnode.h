@@ -1,8 +1,8 @@
 #pragma once
 
-#include "geoobjects/point.h"
-#include "geoobjects/segment.h"
-#include "geoobjects/boundary.h"
+#include "point.h"
+#include "segment.h"
+#include "boundary.h"
 
 #include <vector>
 #include <tuple>

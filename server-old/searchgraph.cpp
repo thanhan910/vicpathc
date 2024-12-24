@@ -7,7 +7,7 @@
 #include "db.h"
 
 #include "quadtree.h"
-#include "geoobjects/point.h"
+#include "point.h"
 
 namespace bg = boost::geometry;
 
