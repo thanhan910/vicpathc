@@ -5,24 +5,14 @@
 #include <cmath>
 #include <algorithm>
 
-#include "server.h"
+#include "quadtree.h"
 
 
 int main()
 {
-    const std::string address = "0.0.0.0";
-    const unsigned short port = 8080;
-
-    try
-    {
-        Server server(address, port);
-        server.run();
-    }
-    catch (std::exception& e)
-    {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return 1;
-    }
+    QuadTree quadtree;
+    quadtree.gen_quadtree();
+    quadtree.test_quadtree();
 
     return 0;
 }
